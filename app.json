@@ -1,0 +1,15 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTitleText": "一课时",
+    "navigationBarBackgroundColor": "#F7F8F2",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F7F8F2",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,128 @@
+<view class="page">
+  <view class="hero">
+    <view>
+      <view class="eyebrow">LESSON TRACKER</view>
+      <view class="title">一课时</view>
+      <view class="subtitle">把每一节课，都看得清清楚楚</view>
+    </view>
+    <view class="date-badge">
+      <text>{{today.month}}月</text>
+      <text class="date-day">{{today.day}}</text>
+    </view>
+  </view>
+
+  <view class="summary-card">
+    <view class="summary-head">
+      <view>
+        <view class="section-label">本月学习</view>
+        <view class="month-title">{{today.month}} 月课时概览</view>
+      </view>
+      <view class="summary-icon">⌁</view>
+    </view>
+    <view class="summary-grid">
+      <view class="summary-item">
+        <text class="summary-number">{{statistics.monthUsed}}</text>
+        <text class="summary-unit">课时</text>
+        <text class="summary-caption">本月已消</text>
+      </view>
+      <view class="divider"></view>
+      <view class="summary-item">
+        <text class="summary-number">{{statistics.remaining}}</text>
+        <text class="summary-unit">课时</text>
+        <text class="summary-caption">全部剩余</text>
+      </view>
+      <view class="divider"></view>
+      <view class="summary-item">
+        <text class="summary-number">{{statistics.active}}</text>
+        <text class="summary-unit">门</text>
+        <text class="summary-caption">进行中课程</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{expiryCourses.length}}" class="reminder-card">
+    <view class="reminder-head"><view><text class="reminder-icon">◷</text> 课程到期提醒</view><text>{{expiryCourses.length}} 门需关注</text></view>
+    <view wx:for="{{expiryCourses}}" wx:key="id" class="reminder-item" data-id="{{item.id}}" bindtap="openCourse">
+      <view class="reminder-name"><view class="reminder-dot" style="background: {{item.color}};"></view>{{item.name}}</view>
+      <view class="due-text {{item.isExpired ? 'expired' : ''}}">{{item.dueText}} · {{item.expiresAt}}</view>
+    </view>
+  </view>
+
+  <view class="toolbar">
+    <view class="toolbar-title">我的课程 <text>{{courses.length}}</text></view>
+    <view class="filter-row">
+      <view wx:for="{{filters}}" wx:key="key" class="filter {{filter === item.key ? 'filter-active' : ''}}" data-key="{{item.key}}" bindtap="changeFilter">{{item.label}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{displayCourses.length}}" class="course-list">
+    <view wx:for="{{displayCourses}}" wx:key="id" class="course-card" data-id="{{item.id}}" bindtap="openCourse">
+      <view class="course-accent" style="background: {{item.color}};"></view>
+      <view class="course-main">
+        <view class="course-top">
+          <view class="course-type" style="color: {{item.color}}; background: {{item.tint}};">{{item.type}}</view>
+          <view class="course-more" style="letter-spacing:0;font-size:38rpx;line-height:28rpx;">⋮</view>
+        </view>
+        <view class="course-name">{{item.name}}</view>
+        <view class="course-meta">已上 {{item.used}} / {{item.total}} 课时</view>
+        <view class="progress-track"><view class="progress-value" style="width: {{item.progress}}%; background: {{item.color}};"></view></view>
+        <view class="course-bottom">
+          <text>剩余 {{item.remaining}} 课时</text>
+          <text wx:if="{{item.expiresAt}}" class="{{item.isExpired ? 'expired' : ''}}">{{item.dueText}}</text>
+          <text wx:elif="{{item.lastUsedAt}}">最近：{{item.lastUsedAt}}</text>
+          <text wx:elif="{{item.used > 0}}">已消 {{item.used}} 课时</text>
+          <text wx:else>尚未消课</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view wx:else class="empty-state">
+    <view class="empty-title">还没有{{filter === 'finished' ? '已结课的' : ''}}课程</view>
+    <view wx:if="{{courses.length === 0}}" class="empty-text">点击右下角，记录你的第一门课</view>
+  </view>
+
+  <view class="fab" bindtap="openAdd">＋<text>新建课程</text></view>
+  <view class="bottom-nav">
+    <view class="nav-item nav-active"><text class="nav-icon">⌂</text><text>课程</text></view>
+    <view class="nav-item" bindtap="goProfile"><text class="nav-icon">◉</text><text>我的</text></view>
+  </view>
+
+  <view wx:if="{{modal}}" class="mask" bindtap="closeModal">
+    <view class="sheet {{modal === 'course' ? 'detail-sheet' : ''}}" catchtap="stopPropagation">
+      <view wx:if="{{modal === 'form'}}">
+        <view class="sheet-handle"></view>
+        <view class="sheet-title">{{editingId ? '编辑课程' : '新建课程'}}</view>
+        <view class="form-item"><text>课程名称</text><input placeholder="例如：少儿英语" value="{{form.name}}" data-field="name" bindinput="updateForm" /></view>
+        <view class="form-item"><text>课程类型</text><picker range="{{types}}" value="{{typeIndex}}" bindchange="selectType"><view class="picker-value">{{form.type}} <text>›</text></view></picker></view>
+        <view class="form-row">
+          <view class="form-item compact"><text>总课时</text><input type="number" placeholder="0" value="{{form.total}}" data-field="total" bindinput="updateForm" /></view>
+          <view class="form-item compact"><text>已消课时</text><input type="number" placeholder="0" value="{{form.used}}" data-field="used" bindinput="updateForm" /></view>
+        </view>
+        <view class="form-item"><text>课程到期日（可选）</text><view style="display:flex;align-items:center;"><picker style="flex:1;" mode="date" value="{{form.expiresAt}}" bindchange="selectExpiry"><view class="picker-value {{form.expiresAt ? '' : 'placeholder'}}">{{form.expiresAt || '请选择到期日期'}} <text>›</text></view></picker><text wx:if="{{form.expiresAt}}" style="display:inline;color:#bb695b;font-size:22rpx;margin-left:18rpx;" bindtap="clearExpiry">清除</text></view></view>
+        <view class="color-picker"><text>标记颜色</text><view class="color-options"><view wx:for="{{colors}}" wx:key="color" class="color-dot {{form.color === item.color ? 'selected' : ''}}" style="background: {{item.color}};" data-color="{{item.color}}" data-tint="{{item.tint}}" bindtap="selectColor"></view></view></view>
+        <view class="form-actions"><button class="button ghost" style="display:flex;align-items:center;justify-content:center;padding:0;line-height:1;" bindtap="closeModal">取消</button><button class="button primary" style="display:flex;align-items:center;justify-content:center;padding:0;line-height:1;" bindtap="saveCourse">保存课程</button></view>
+      </view>
+
+      <view wx:if="{{modal === 'course'}}">
+        <view class="sheet-handle"></view>
+        <view class="detail-header"><view class="detail-type" style="color: {{selectedCourse.color}}; background: {{selectedCourse.tint}};">{{selectedCourse.type}}</view><view class="close" bindtap="closeModal">×</view></view>
+        <view class="detail-title">{{selectedCourse.name}}</view>
+        <view class="detail-stats"><view><text>{{selectedCourse.used}}</text><small>已消课时</small></view><view><text>{{selectedCourse.remaining}}</text><small>剩余课时</small></view><view><text>{{selectedCourse.total}}</text><small>总课时</small></view></view>
+        <view class="detail-progress"><view style="width: {{selectedCourse.progress}}%; background: {{selectedCourse.color}};"></view></view>
+        <view class="detail-actions"><button class="button primary" style="display:flex;align-items:center;justify-content:center;padding:0;line-height:1;" bindtap="openConsume">消耗 1 课时</button><button class="button ghost" style="display:flex;align-items:center;justify-content:center;padding:0;line-height:1;" bindtap="editCourse">编辑</button></view>
+        <view class="record-title">消课记录</view>
+        <view wx:if="{{selectedCourse.records.length}}" class="record-list"><view wx:for="{{selectedCourse.records}}" wx:key="id" class="record"><text>完成一课时</text><text>{{item.timestamp}}</text></view></view>
+        <view wx:else class="no-record">还没有消课记录</view>
+        <view class="delete-link" bindtap="deleteCourse">删除这门课程</view>
+      </view>
+
+      <view wx:if="{{modal === 'consume'}}">
+        <view class="sheet-handle"></view>
+        <view class="sheet-title">记录消课时间</view>
+        <view class="form-item"><text>消课日期</text><picker mode="date" value="{{consumeDate}}" bindchange="selectConsumeDate"><view class="picker-value">{{consumeDate}} <text>›</text></view></picker></view>
+        <view class="form-item"><text>消课时间</text><picker mode="time" value="{{consumeTime}}" bindchange="selectConsumeTime"><view class="picker-value">{{consumeTime}} <text>›</text></view></picker></view>
+        <view class="form-actions"><button class="button ghost" style="display:flex;align-items:center;justify-content:center;padding:0;line-height:1;" bindtap="closeModal">取消</button><button class="button primary" style="display:flex;align-items:center;justify-content:center;padding:0;line-height:1;" bindtap="confirmConsume">确认消课</button></view>
+      </view>
+    </view>
+  </view>
+</view>

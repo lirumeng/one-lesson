@@ -1,0 +1,4 @@
+{
+  "desc": "课程课时管理",
+  "rules": [{ "action": "allow", "page": "*" }]
+}
