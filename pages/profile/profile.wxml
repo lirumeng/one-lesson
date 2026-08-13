@@ -1,14 +1,8 @@
 <view class="profile-page {{user.loggedIn ? '' : 'login-page'}}">
-  <view wx:if="{{user.loggedIn}}" class="profile-hero">
-    <view class="eyebrow">PERSONAL SPACE</view>
-    <view class="page-title">我的</view>
-    <view class="page-subtitle">记录每一次认真学习的时刻</view>
-  </view>
-
   <view wx:if="{{user.loggedIn}}" class="user-card">
     <image wx:if="{{user.avatarUrl}}" class="avatar" src="{{user.avatarUrl}}" mode="aspectFill"></image>
     <view wx:else class="avatar avatar-letter">{{user.initial}}</view>
-    <view class="user-info"><view class="user-name">{{user.nickName}}</view><view class="login-state"><text></text>已登录 · 云端同步已开启</view></view>
+    <view class="user-info"><view class="user-name">{{user.nickName}}</view><view class="login-state">记录每一次认真学习的时刻</view></view>
     <view class="logout" bindtap="logout">退出</view>
   </view>
   <view wx:else class="onboarding-card">
@@ -62,7 +56,8 @@
     <view style="width:100%;max-height:78vh;box-sizing:border-box;padding:22rpx 28rpx 42rpx;background:#fbfcf8;border-radius:32rpx 32rpx 0 0;" catchtap="stopPropagation">
       <view style="width:66rpx;height:8rpx;margin:0 auto 24rpx;border-radius:8rpx;background:#d5ddd2;"></view>
       <view style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18rpx;"><text style="font-size:34rpx;font-weight:700;">全部消课记录</text><text style="padding:10rpx;color:#718071;font-size:34rpx;" bindtap="closeAllRecords">×</text></view>
-      <scroll-view scroll-y style="max-height:60vh;"><view wx:for="{{allRecords}}" wx:key="id" style="display:flex;align-items:center;padding:24rpx 4rpx;border-bottom:1rpx solid #e7ece4;"><view style="box-sizing:content-box;width:16rpx;height:16rpx;margin-right:20rpx;border:5rpx solid #fff;border-radius:50%;box-shadow:0 0 0 2rpx #e7ece4;background:{{item.color}};"></view><view style="flex:1;font-size:28rpx;">{{item.courseName}}<text style="display:block;margin-top:7rpx;color:#859184;font-size:23rpx;">完成 1 课时 · {{item.timestamp}}</text></view><text style="padding:6rpx 12rpx;border-radius:8rpx;color:{{item.color}};background:{{item.tint}};font-size:22rpx;">{{item.type}}</text></view></scroll-view>
+      <scroll-view wx:if="{{recordCourses.length}}" scroll-x style="white-space:nowrap;margin:0 -4rpx 16rpx;" show-scrollbar="false"><view style="display:inline-flex;gap:14rpx;padding:2rpx 4rpx;"><view class="record-filter {{recordCourseFilter === 'all' ? 'record-filter-active' : ''}}" data-course="all" bindtap="changeRecordCourse">全部</view><view wx:for="{{recordCourses}}" wx:key="*this" class="record-filter {{recordCourseFilter === item ? 'record-filter-active' : ''}}" data-course="{{item}}" bindtap="changeRecordCourse">{{item}}</view></view></scroll-view>
+      <scroll-view scroll-y style="max-height:60vh;"><view wx:for="{{filteredRecords}}" wx:key="id" style="display:flex;align-items:center;padding:24rpx 4rpx;border-bottom:1rpx solid #e7ece4;"><view style="box-sizing:content-box;width:16rpx;height:16rpx;margin-right:20rpx;border:5rpx solid #fff;border-radius:50%;box-shadow:0 0 0 2rpx #e7ece4;background:{{item.color}};"></view><view style="flex:1;font-size:28rpx;">{{item.courseName}}<text style="display:block;margin-top:7rpx;color:#859184;font-size:23rpx;">完成 1 课时 · {{item.timestamp}}</text></view><text style="padding:6rpx 12rpx;border-radius:8rpx;color:{{item.color}};background:{{item.tint}};font-size:22rpx;">{{item.type}}</text></view><view wx:if="{{!filteredRecords.length}}" style="padding:60rpx 0;text-align:center;color:#95a095;font-size:24rpx;">该课程还没有消课记录</view></scroll-view>
     </view>
   </view>
 </view>

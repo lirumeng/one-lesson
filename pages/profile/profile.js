@@ -11,7 +11,7 @@ function dueInfo(expiresAt) {
 function monthKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` }
 
 Page({
-  data: { user: { loggedIn: false, nickName: '', avatarUrl: '', initial: '一', phoneMasked: '', hasPhone: false }, loginPending: false, stats: { totalUsed: 0, courseCount: 0, monthUsed: 0 }, records: [], allRecords: [], hasMoreRecords: false, showAllRecords: false, reminders: [], report: [] },
+  data: { user: { loggedIn: false, nickName: '', avatarUrl: '', initial: '一', phoneMasked: '', hasPhone: false }, loginPending: false, stats: { totalUsed: 0, courseCount: 0, monthUsed: 0 }, records: [], allRecords: [], filteredRecords: [], recordCourses: [], recordCourseFilter: 'all', hasMoreRecords: false, showAllRecords: false, reminders: [], report: [] },
   onShow() { this.loadData() },
   loadData() {
     const storedUser = wx.getStorageSync('one_lesson_cloud_user')
@@ -24,7 +24,10 @@ Page({
     const max = Math.max(1, ...months.map(month => monthCounts[month.key] || 0))
     const report = months.map(month => ({ ...month, count: monthCounts[month.key] || 0, height: Math.max(8, Math.round(((monthCounts[month.key] || 0) / max) * 104)) }))
     const reminders = courses.filter(course => course.expiresAt && Number(course.total) > Number(course.used) && dueInfo(course.expiresAt).daysToExpiry <= 30).map(course => ({ ...course, ...dueInfo(course.expiresAt) })).sort((a, b) => a.daysToExpiry - b.daysToExpiry)
-    this.setData({ user, records: records.slice(0, 5), allRecords: records, hasMoreRecords: records.length > 5, reminders, report, stats: { totalUsed: courses.reduce((sum, course) => sum + (Number(course.used) || 0), 0), courseCount: courses.length, monthUsed: records.filter(record => record.date.indexOf(monthPrefix) === 0).length } })
+    const recordCourses = [...new Set(records.map(record => record.courseName).filter(Boolean))]
+    const recordCourseFilter = recordCourses.includes(this.data.recordCourseFilter) ? this.data.recordCourseFilter : 'all'
+    const filteredRecords = recordCourseFilter === 'all' ? records : records.filter(record => record.courseName === recordCourseFilter)
+    this.setData({ user, records: records.slice(0, 5), allRecords: records, filteredRecords, recordCourses, recordCourseFilter, hasMoreRecords: records.length > 5, reminders, report, stats: { totalUsed: courses.reduce((sum, course) => sum + (Number(course.used) || 0), 0), courseCount: courses.length, monthUsed: records.filter(record => record.date.indexOf(monthPrefix) === 0).length } })
   },
   completeLogin() {
     if (this.data.loginPending) return
@@ -55,6 +58,10 @@ Page({
   logout() { wx.showModal({ title: '退出登录', content: '云端课程不会删除，下次登录同一微信账号可继续使用。', success: res => { if (res.confirm) { const user = { loggedIn: false, nickName: '', avatarUrl: '', initial: '一', phoneMasked: '', hasPhone: false }; wx.removeStorageSync('one_lesson_cloud_user'); this.setData({ user }) } } }) },
   openAllRecords() { this.setData({ showAllRecords: true }) },
   closeAllRecords() { this.setData({ showAllRecords: false }) },
+  changeRecordCourse(e) {
+    const recordCourseFilter = e.currentTarget.dataset.course
+    this.setData({ recordCourseFilter, filteredRecords: recordCourseFilter === 'all' ? this.data.allRecords : this.data.allRecords.filter(record => record.courseName === recordCourseFilter) })
+  },
   stopPropagation() {},
   goCourses() { wx.navigateBack({ delta: 1 }) }
 })

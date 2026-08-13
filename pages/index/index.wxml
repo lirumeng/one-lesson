@@ -1,16 +1,4 @@
 <view class="page">
-  <view class="hero">
-    <view>
-      <view class="eyebrow">LESSON TRACKER</view>
-      <view class="title">一课时</view>
-      <view class="subtitle">把每一节课，都看得清清楚楚</view>
-    </view>
-    <view class="date-badge">
-      <text>{{today.month}}月</text>
-      <text class="date-day">{{today.day}}</text>
-    </view>
-  </view>
-
   <view class="summary-card">
     <view class="summary-head">
       <view>
